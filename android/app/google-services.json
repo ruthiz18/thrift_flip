@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "126385956901",
+    "project_id": "thriftflip-d686a",
+    "storage_bucket": "thriftflip-d686a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:126385956901:android:6269368792768121c137cc",
+        "android_client_info": {
+          "package_name": "com.example.thrift_flip"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_ax8TGBpb13oPJM8N0juuWhpwMvTgLKg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
