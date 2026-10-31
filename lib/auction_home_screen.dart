@@ -34,7 +34,14 @@ class AuctionHomeScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text('Thrift Flip'),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Thrift Flip'),
+            Text(FirebaseAuth.instance.currentUser?.email ?? '',
+                style: const TextStyle(fontSize: 12)),
+          ],
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -44,7 +51,10 @@ class AuctionHomeScreen extends StatelessWidget {
         ],
       ),
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: auctions().orderBy('createdAt', descending: true).snapshots(),
+        stream: auctions()
+            .where('sellerId',
+                isEqualTo: FirebaseAuth.instance.currentUser?.uid)
+            .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Center(
@@ -58,7 +68,10 @@ class AuctionHomeScreen extends StatelessWidget {
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
-          final items = snapshot.data!.docs.map(Auction.fromDoc).toList();
+          // Newest first; sorted here so the query needs no composite index.
+          final items = snapshot.data!.docs.map(Auction.fromDoc).toList()
+            ..sort((a, b) => (b.createdAt ?? DateTime.now())
+                .compareTo(a.createdAt ?? DateTime.now()));
           if (items.isEmpty) {
             return const Center(child: Text('No auctions yet'));
           }
