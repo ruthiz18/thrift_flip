@@ -63,6 +63,7 @@ class _AuctionFormScreenState extends State<AuctionFormScreen> {
   Widget build(BuildContext context) {
     final editing = widget.auction != null;
     final scheme = Theme.of(context).colorScheme;
+    final activeCount = context.watch<AuctionState>().activeCount;
     return Scaffold(
       appBar: AppBar(title: Text(editing ? 'Edit auction' : 'New auction')),
       body: SafeArea(
@@ -71,6 +72,25 @@ class _AuctionFormScreenState extends State<AuctionFormScreen> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
             children: [
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: scheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.inventory_2_outlined,
+                        color: scheme.onPrimaryContainer),
+                    const SizedBox(width: 12),
+                    Text('You have $activeCount active auctions',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: scheme.onPrimaryContainer)),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _title,
                 textCapitalization: TextCapitalization.sentences,

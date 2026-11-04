@@ -18,11 +18,13 @@ class AuctionHomeScreen extends StatelessWidget {
         content: Text(auction.title),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel')),
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
           TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Delete')),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete'),
+          ),
         ],
       ),
     );
@@ -66,11 +68,14 @@ class AuctionHomeScreen extends StatelessWidget {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Thrift Flip',
-                style: text.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
-            Text(user.email ?? '',
-                style:
-                    text.bodySmall?.copyWith(color: scheme.onSurfaceVariant)),
+            Text(
+              'Thrift Flip',
+              style: text.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+            ),
+            Text(
+              user.email ?? '',
+              style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+            ),
           ],
         ),
         actions: [
@@ -105,8 +110,7 @@ class AuctionHomeScreen extends StatelessWidget {
     if (state.loading) {
       return const Center(child: CircularProgressIndicator());
     }
-    final items = state.auctions;
-    if (items.isEmpty) {
+    if (state.auctions.isEmpty) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -115,98 +119,150 @@ class AuctionHomeScreen extends StatelessWidget {
             const SizedBox(height: 12),
             Text('No auctions yet', style: text.titleMedium),
             const SizedBox(height: 4),
-            Text('Tap New auction to list your first item',
-                style:
-                    text.bodyMedium?.copyWith(color: scheme.onSurfaceVariant)),
+            Text(
+              'Tap New auction to list your first item',
+              style: text.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
+            ),
           ],
         ),
       );
     }
-    return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
-      itemCount: items.length + 1,
-      separatorBuilder: (_, _) => const SizedBox(height: 12),
-      itemBuilder: (context, i) {
-        if (i == 0) {
-          return Padding(
-            padding: const EdgeInsets.only(left: 4),
-            child: Text(
-                'Your listings (${items.length}) · ${state.activeCount} active',
-                style: text.titleSmall?.copyWith(color: scheme.onSurfaceVariant)),
-          );
-        }
-        final a = items[i - 1];
-        final mine = a.sellerId == user.uid;
-        return Card(
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: mine
-                ? () => _openForm(context, a)
-                : null,
-            onLongPress: mine ? () => _delete(context, a) : null,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: scheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Icon(Icons.checkroom_outlined,
-                        color: scheme.onPrimaryContainer),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(a.title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: text.titleMedium
-                                ?.copyWith(fontWeight: FontWeight.w600)),
-                        const SizedBox(height: 2),
-                        Text(a.description,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: text.bodySmall
-                                ?.copyWith(color: scheme.onSurfaceVariant)),
-                        const SizedBox(height: 6),
-                        Row(
-                          children: [
-                            Icon(Icons.schedule,
-                                size: 14, color: scheme.outline),
-                            const SizedBox(width: 4),
-                            Text(_timeLeft(a.endsAt),
-                                style: text.labelSmall
-                                    ?.copyWith(color: scheme.outline)),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text('Current bid',
-                          style: text.labelSmall
-                              ?.copyWith(color: scheme.outline)),
-                      Text('${a.currentBid}',
-                          style: text.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: scheme.primary)),
-                    ],
-                  ),
-                ],
-              ),
+    final items = state.visible;
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+          child: TextField(
+            onChanged: (text) => context.read<AuctionState>().setQuery(text),
+            decoration: const InputDecoration(
+              hintText: 'Search your listings',
+              prefixIcon: Icon(Icons.search),
             ),
           ),
-        );
-      },
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+          child: Row(
+            children: [
+              for (final f in ['all', 'active', 'ended']) ...[
+                ChoiceChip(
+                  label: Text(f.toUpperCase()),
+                  selected: state.filter == f,
+                  onSelected: (_) => context.read<AuctionState>().setFilter(f),
+                ),
+                const SizedBox(width: 8),
+              ],
+              const Spacer(),
+              Text(
+                '${state.activeCount} active',
+                style: text.labelMedium?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: items.isEmpty
+              ? const Center(child: Text('Nothing matches this filter.'))
+              : ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+                  itemCount: items.length,
+                  separatorBuilder: (_, _) => const SizedBox(height: 12),
+                  itemBuilder: (context, i) {
+                    final a = items[i];
+                    final mine = a.sellerId == user.uid;
+                    return Card(
+                      clipBehavior: Clip.antiAlias,
+                      child: InkWell(
+                        onTap: mine ? () => _openForm(context, a) : null,
+                        onLongPress: mine ? () => _delete(context, a) : null,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 52,
+                                height: 52,
+                                decoration: BoxDecoration(
+                                  color: scheme.primaryContainer,
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: Icon(
+                                  Icons.checkroom_outlined,
+                                  color: scheme.onPrimaryContainer,
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      a.title,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: text.titleMedium?.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      a.description,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: text.bodySmall?.copyWith(
+                                        color: scheme.onSurfaceVariant,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.schedule,
+                                          size: 14,
+                                          color: scheme.outline,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          _timeLeft(a.endsAt),
+                                          style: text.labelSmall?.copyWith(
+                                            color: scheme.outline,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    'Current bid',
+                                    style: text.labelSmall?.copyWith(
+                                      color: scheme.outline,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${a.currentBid}',
+                                    style: text.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                      color: scheme.primary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+        ),
+      ],
     );
   }
 }

@@ -7,6 +7,7 @@ import '../repositories/auction_repository.dart';
 
 class AuctionState extends ChangeNotifier {
   AuctionState(this._repo) {
+    debugPrint('Brain born for ${_repo.uid}');
     // Born: open the pipe to the backend, once.
     _subscription = _repo.watchMine().listen(
       (list) {
@@ -36,10 +37,38 @@ class AuctionState extends ChangeNotifier {
   bool get loading => _loading;
   String? get error => _error;
 
+  // What the user chose to see: 'all', 'active' or 'ended', plus a search text.
+  String _filter = 'all';
+  String _query = '';
+  String get filter => _filter;
+
+  void setFilter(String value) {
+    _filter = value;
+    notifyListeners();
+  }
+
+  void setQuery(String value) {
+    _query = value.trim().toLowerCase();
+    notifyListeners();
+  }
+
+  bool _isActive(Auction a) =>
+      a.endsAt == null || a.endsAt!.isAfter(DateTime.now());
+
   // Never saved, computed every time it is read: listings still open for bids.
-  int get activeCount => _auctions
-      .where((a) => a.endsAt == null || a.endsAt!.isAfter(DateTime.now()))
-      .length;
+  int get activeCount => _auctions.where(_isActive).length;
+
+  // The list the screens draw: the filter and the search applied to _auctions.
+  List<Auction> get visible {
+    var list = _auctions.where(
+      (a) =>
+          a.title.toLowerCase().contains(_query) ||
+          a.description.toLowerCase().contains(_query),
+    );
+    if (_filter == 'active') list = list.where(_isActive);
+    if (_filter == 'ended') list = list.where((a) => !_isActive(a));
+    return list.toList();
+  }
 
   // Actions: the brain hands the job to the repository.
   Future<void> add(Auction auction) => _repo.add(auction);
@@ -49,6 +78,7 @@ class AuctionState extends ChangeNotifier {
 
   @override
   void dispose() {
+    debugPrint('Brain disposed: pipe closed');
     _subscription?.cancel();
     super.dispose();
   }
