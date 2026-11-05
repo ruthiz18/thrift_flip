@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../models/auction.dart';
@@ -23,6 +26,34 @@ class _AuctionFormScreenState extends State<AuctionFormScreen> {
       text: widget.auction?.startingPrice.toString());
   bool _busy = false;
   String? _error;
+  File? _photo; // a new photo picked on this phone, not uploaded yet
+
+  Future<void> _pickPhoto(ImageSource source) async {
+    final picked = await ImagePicker().pickImage(
+      source: source,
+      maxWidth: 1200, // phone photos are huge: make them smaller
+      imageQuality: 70, // and lighter
+    );
+    if (picked == null) return; // the user cancelled
+    setState(() => _photo = File(picked.path));
+  }
+
+  Widget _photoPreview() {
+    if (_photo != null) {
+      return Image.file(_photo!, height: 180, fit: BoxFit.cover);
+    }
+    final saved = widget.auction?.photoUrl;
+    if (saved != null) {
+      return Image.network(
+        saved,
+        height: 180,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stack) => const SizedBox(
+            height: 180, child: Center(child: Icon(Icons.broken_image))),
+      );
+    }
+    return const SizedBox.shrink(); // nothing to show
+  }
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
@@ -32,11 +63,17 @@ class _AuctionFormScreenState extends State<AuctionFormScreen> {
       _error = null;
     });
     try {
+      // Keep the old photo unless a new one was picked: upload it first.
+      String? photoUrl = widget.auction?.photoUrl;
+      if (_photo != null) {
+        photoUrl = await state.uploadPhoto(_photo!);
+      }
       final auction = Auction(
         title: _title.text.trim(),
         description: _description.text.trim(),
         startingPrice: int.parse(_price.text.trim()),
         endsAt: DateTime.now().add(const Duration(days: 3)),
+        photoUrl: photoUrl,
       );
       if (widget.auction == null) {
         await state.add(auction);
@@ -124,6 +161,30 @@ class _AuctionFormScreenState extends State<AuctionFormScreen> {
                   final n = int.tryParse((v ?? '').trim());
                   return n == null || n <= 0 ? 'Enter a price above 0' : null;
                 },
+              ),
+              const SizedBox(height: 16),
+              _photoPreview(),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed:
+                          _busy ? null : () => _pickPhoto(ImageSource.camera),
+                      icon: const Icon(Icons.photo_camera),
+                      label: const Text('Camera'),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed:
+                          _busy ? null : () => _pickPhoto(ImageSource.gallery),
+                      icon: const Icon(Icons.photo_library),
+                      label: const Text('Gallery'),
+                    ),
+                  ),
+                ],
               ),
               if (_error != null) ...[
                 const SizedBox(height: 16),

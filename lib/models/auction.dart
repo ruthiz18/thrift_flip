@@ -10,6 +10,7 @@ class Auction {
     String? sellerId,
     this.endsAt,
     this.createdAt,
+    this.photoUrl,
   })  : currentBid = currentBid ?? startingPrice,
         sellerId = sellerId ?? '';
 
@@ -21,12 +22,14 @@ class Auction {
   final String sellerId;
   final DateTime? endsAt;
   final DateTime? createdAt;
+  final String? photoUrl; // a link to the photo, or null: no photo
 
   Map<String, dynamic> toMap() => {
         'title': title,
         'description': description,
         'startingPrice': startingPrice,
         'currentBid': currentBid,
+        'photoUrl': photoUrl,
         if (endsAt != null) 'endsAt': Timestamp.fromDate(endsAt!),
         'createdAt': FieldValue.serverTimestamp(),
       };
@@ -42,6 +45,7 @@ class Auction {
       sellerId: data['sellerId'] as String,
       endsAt: (data['endsAt'] as Timestamp?)?.toDate(),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
+      photoUrl: data['photoUrl'] as String?,
     );
   }
 }

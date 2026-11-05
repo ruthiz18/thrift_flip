@@ -33,6 +33,7 @@ class AuctionRepository {
       _auctions.doc(id).update({
         'title': auction.title,
         'description': auction.description,
+        if (auction.photoUrl != null) 'photoUrl': auction.photoUrl,
       });
 
   Future<void> delete(String id) => _auctions.doc(id).delete();

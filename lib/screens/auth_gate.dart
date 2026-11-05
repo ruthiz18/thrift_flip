@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../repositories/auction_repository.dart';
+import '../repositories/photo_repository.dart';
 import '../state/auction_state.dart';
 import 'auction_home_screen.dart';
 import 'login_screen.dart';
@@ -24,7 +25,8 @@ class AuthGate extends StatelessWidget {
         }
         // Signed in: one brain for this user, given to the home screen.
         return ChangeNotifierProvider<AuctionState>(
-          create: (_) => AuctionState(AuctionRepository(user.uid)),
+          create: (_) =>
+              AuctionState(AuctionRepository(user.uid), PhotoRepository()),
           child: const AuctionHomeScreen(),
         );
       },

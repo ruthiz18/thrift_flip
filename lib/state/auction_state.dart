@@ -1,12 +1,15 @@
 import 'dart:async';
 
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 
 import '../models/auction.dart';
 import '../repositories/auction_repository.dart';
+import '../repositories/photo_repository.dart';
 
 class AuctionState extends ChangeNotifier {
-  AuctionState(this._repo) {
+  AuctionState(this._repo, this._photos) {
     debugPrint('Brain born for ${_repo.uid}');
     // Born: open the pipe to the backend, once.
     _subscription = _repo.watchMine().listen(
@@ -25,6 +28,7 @@ class AuctionState extends ChangeNotifier {
   }
 
   final AuctionRepository _repo;
+  final PhotoRepository _photos;
   StreamSubscription<List<Auction>>? _subscription;
 
   // The data: private, so only the brain can change it.
@@ -74,6 +78,7 @@ class AuctionState extends ChangeNotifier {
   Future<void> add(Auction auction) => _repo.add(auction);
   Future<void> edit(String id, Auction auction) => _repo.update(id, auction);
   Future<void> remove(Auction auction) => _repo.delete(auction.id);
+  Future<String> uploadPhoto(File photo) => _photos.upload(photo);
   Future<void> addSamples() => _repo.addSamples();
 
   @override

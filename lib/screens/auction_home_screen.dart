@@ -184,14 +184,25 @@ class AuctionHomeScreen extends StatelessWidget {
                               Container(
                                 width: 52,
                                 height: 52,
+                                clipBehavior: Clip.antiAlias,
                                 decoration: BoxDecoration(
                                   color: scheme.primaryContainer,
                                   borderRadius: BorderRadius.circular(14),
                                 ),
-                                child: Icon(
-                                  Icons.checkroom_outlined,
-                                  color: scheme.onPrimaryContainer,
-                                ),
+                                child: a.photoUrl == null
+                                    ? Icon(
+                                        Icons.checkroom_outlined,
+                                        color: scheme.onPrimaryContainer,
+                                      )
+                                    : Image.network(
+                                        a.photoUrl!,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stack) =>
+                                            Icon(
+                                          Icons.broken_image,
+                                          color: scheme.onPrimaryContainer,
+                                        ),
+                                      ),
                               ),
                               const SizedBox(width: 14),
                               Expanded(
