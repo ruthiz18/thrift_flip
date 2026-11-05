@@ -1,13 +1,43 @@
 # Thrift Flip
 
-A Flutter app for listing and browsing second-hand clothing auctions. It signs users in with Firebase Authentication, and each user's data is saved in Cloud Firestore under their own id, so two accounts never see each other's data, and every change appears live.
+![Thrift Flip](screenshots/home.png)
+
+List second-hand clothes for auction, with a photo of each item, and watch your listings update live on any phone you log in from.
+
+## Download
+
+[Download the APK](https://github.com/ruthiz18/thrift_flip/releases/download/v1.0.0/app-arm64-v8a-release.apk) (for Android phones)
+
+Or see all versions on the [Releases page](https://github.com/ruthiz18/thrift_flip/releases).
+
+## Features
+
+- Create an account and log in
+- Create, edit and delete your auctions, each with a photo from the camera or gallery
+- Filter auctions (all, active, ended) and search by title or description
+- Live updates: a change shows up on every phone at once
+- Your listings are tied to your account
 
 ## Screenshots
 
-![Login](screenshots/login.png)
+| Login | My listings | New auction |
+|---|---|---|
+| ![Login](screenshots/login.png) | ![Home](screenshots/home.png) | ![Form](screenshots/form.png) |
 
-![My data in Firestore](screenshots/console.png)
+## How it's built
 
-![Live update](screenshots/live.png)
+- Flutter, with Provider for state management
+- Firebase Authentication and Cloud Firestore; photos on Cloudinary
+- Four layers: models, repositories, state, screens
 
-![Second account sees nothing of mine](screenshots/denied.png)
+## Run it yourself
+
+1. Clone the repository and run `flutter pub get`.
+2. Connect your own Firebase project (`google-services.json`).
+3. Put your Cloudinary cloud name and upload preset in
+   `lib/repositories/photo_repository.dart`.
+4. `flutter run`
+
+## Author
+
+Ruth Izukondi: [GitHub](https://github.com/ruthiz18)
